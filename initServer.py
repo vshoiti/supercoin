@@ -1,6 +1,6 @@
 from socket import *
 
-serverName = "127.0.0.1" #coocar o ip do peer central
+serverName = "35.229.88.152" #coocar o ip do peer central
 serverPort = 12000
 
 initialSocket = socket(AF_INET, SOCK_STREAM)
