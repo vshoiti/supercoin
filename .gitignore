@@ -1,3 +1,4 @@
 .vscode/
 peers.txt
-cpeers.txtnohup.out
+cpeers.txt
+nohup.out
