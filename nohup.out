@@ -1,7 +1,0 @@
-The server is ready
-Traceback (most recent call last):
-  File "./coinServer.py", line 13, in <module>
-    connectionSocket, addr = serverSocket.accept()
-  File "/usr/lib/python3.5/socket.py", line 195, in accept
-    fd, addr = self._accept()
-KeyboardInterrupt
