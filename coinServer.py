@@ -13,7 +13,7 @@ while 1:
     code = connectionSocket.recv(1024)
     if code.decode() == "1":
         with open("peers.txt", "a") as peers:
-            peers.write(f'{addr[0]}\n')
+            peers.write('{}\n'.format(addr[0]))
         with open("peers.txt", "r") as peers:
             connectionSocket.send(peers.read().encode())
     connectionSocket.close()
