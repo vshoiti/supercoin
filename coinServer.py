@@ -1,6 +1,7 @@
+#!/usr/bin/python3.5
+
 from socket import *
 
-file = open("peers.txt", "w+")
 serverPort = 12000
 serverSocket = socket(AF_INET, SOCK_STREAM)
 serverSocket.bind(('', serverPort))
