@@ -2,3 +2,4 @@
 peers.txt
 cpeers.txt
 nohup.out
+__pycache__/
