@@ -1,18 +1,18 @@
 from socket import *
 from utils import *
+import sys
 
-peersSet = set()
-serverName = "127.0.0.1" #colocar o ip do peer central
-serverPort = 12000
-peersSet.add(serverName)
+SERVER = "127.0.0.1" #colocar o ip do peer central
+PORT = 12000
+BUFFER = 1024
 
 initialSocket = socket(AF_INET, SOCK_STREAM)
-initialSocket.connect((serverName, serverPort))
+initialSocket.connect((SERVER, PORT))
 initialSocket.send("1".encode())
 
-data = initialSocket.recv(1024)
-print(eval(data.decode()))
+data = initialSocket.recv(BUFFER)
 peersSet = eval(data.decode())
+peersSet.add(SERVER)
 writePeers("cpeers.txt", peersSet)
 
 initialSocket.close()

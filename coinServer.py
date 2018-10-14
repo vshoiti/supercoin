@@ -2,6 +2,7 @@
 
 from socket import *
 from utils import *
+from threading import *
 
 peersSet = set()
 
@@ -14,8 +15,7 @@ serverSocket.listen(1)
 
 print("The server is ready")
 
-while 1:
-    connectionSocket, addr = serverSocket.accept()
+def sendPeers(connectionSocket):
     code = connectionSocket.recv(1024)
     if code.decode() == "1":
         connectionSocket.send(repr(peersSet).encode())
@@ -24,5 +24,10 @@ while 1:
             with open("peers.txt", "a") as peers:
                 peers.write('{}\n'.format(addr[0]))
         peersSet.add(addr[0])
+
+while 1:
+    connectionSocket, addr = serverSocket.accept()
+    thread = Thread(target=sendPeers, args=(connectionSocket,))
+    thread.start()
 
 connectionSocket.close()

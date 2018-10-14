@@ -1,4 +1,4 @@
-from Hasher import hash_string
+from utils import hash_string
 
 
 class Blockchain:
@@ -29,3 +29,8 @@ class Blockchain:
             self.blocks[index] = block
         else:
             self.blocks.append(block)
+
+    def get_transactions(self):
+        for block in self.blocks:
+            for transaction in block.transactions:
+                yield transaction
