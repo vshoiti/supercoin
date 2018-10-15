@@ -6,9 +6,19 @@ class Block:
         self.transactions = []
 
     def __str__(self):
-        self_dict = {}  # montagem manual do dict pois self.__dict__ não ordenava deterministicamente os itens
-        self_dict['nonce'] = self.nonce
-        self_dict['index'] = self.index
-        self_dict['prev_hash'] = self.prev_hash
-        self_dict['transactions'] = self.transactions
-        return str(self_dict)
+        # montagem manual da string pois self.__dict__ não ordenava deterministicamente os items
+        self_string = "{"
+        self_string += "'nonce': " + str(self.nonce) + ", "
+        self_string += "'index': " + str(self.index) + ", "
+        self_string += "'prev_hash': '" + str(self.prev_hash) + "', "
+        self_string += "'transactions': " + str(self.transactions) + "}"
+        return self_string
+
+# a = Block(1, '0000')
+# print(a)
+#
+# b = eval(str(a))
+# print(b)
+#
+# b = Block(b['index'], b['prev_hash'])
+# print(b)

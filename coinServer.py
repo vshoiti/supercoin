@@ -2,11 +2,35 @@
 
 from socket import *
 from utils import *
-from threading import *
+import _thread
+
+
+def sendPeers(connection_socket):
+    try:
+        msg = ''
+        while True:
+            data = connection_socket.recv(1024).decode('ascii')
+            if not data:
+                break
+            msg += data
+
+        code, data = read_message(msg)
+        if code == 'connect':
+            peers = repr(peersSet)
+            connection_socket.send(write_message('ok', peers))
+
+            if (addr[0], data) not in peersSet:
+                peersSet.add((addr[0], data))
+                # with open("peers.txt", "a") as peers:
+                #     peers.write("{}\n".format((addr[0], data)))
+        connection_socket.close()
+    finally:
+        connection_socket.close()
+
 
 peersSet = set()
-
-readPeers("peers.txt", peersSet)
+# readPeers("peers.txt", peersSet)
+# print(peersSet)
 
 serverPort = 12000
 serverSocket = socket(AF_INET, SOCK_STREAM)
@@ -15,19 +39,6 @@ serverSocket.listen(1)
 
 print("The server is ready")
 
-def sendPeers(connectionSocket):
-    code = connectionSocket.recv(1024)
-    if code.decode() == "1":
-        connectionSocket.send(repr(peersSet).encode())
-        addrSet = {addr[0]}    
-        if not peersSet.issuperset(addrSet):
-            with open("peers.txt", "a") as peers:
-                peers.write('{}\n'.format(addr[0]))
-        peersSet.add(addr[0])
-
 while 1:
     connectionSocket, addr = serverSocket.accept()
-    thread = Thread(target=sendPeers, args=(connectionSocket,))
-    thread.start()
-
-connectionSocket.close()
+    thread = _thread.start_new_thread(sendPeers, (connectionSocket,))

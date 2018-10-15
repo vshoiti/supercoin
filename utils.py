@@ -9,7 +9,7 @@ def read_message(msg):
 
 
 def write_message(code, data):
-    return code + '=' + build_data(data)
+    return (code + '=' + build_data(data)).encode('ascii')
 
 
 def build_data(data):

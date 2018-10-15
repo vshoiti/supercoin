@@ -10,7 +10,7 @@ class Blockchain:
         return str(self.__dict__)
 
     def get_last(self):
-        return self.blocks[-1:][0]
+        return self.blocks[-1]
 
     def get_size(self):
         return len(self.blocks)
@@ -30,7 +30,7 @@ class Blockchain:
         else:
             self.blocks.append(block)
 
-    def get_transactions(self):
+    def get_all_transactions(self):
         for block in self.blocks:
             for transaction in block.transactions:
                 yield transaction
