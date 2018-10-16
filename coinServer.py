@@ -20,7 +20,7 @@ def sendPeers(connection_socket):
             connection_socket.send(write_message('ok', peers))
 
             for peer in eval(peers):
-                thread = _thread.start_new_thread(update_peers, (peer, addr[0], data))
+                _thread.start_new_thread(update_peers, (peer, addr[0], data))
 
             if (addr[0], data) not in peersSet:
                 peersSet.add((addr[0], data))
@@ -36,9 +36,11 @@ def update_peers(peer, ip, port):
     try:
         s = socket(AF_INET, SOCK_STREAM)
         s.connect((peer[0], int(peer[1])))
-        s.send(write_message('peer' ,(ip, port)))
+        s.send(write_message('peer', (ip, port)))
     except ConnectionRefusedError:
         print(ip, ':', port, ' is unreachable')
+    except TimeoutError:
+        print(ip, ':', port, ' timed out')
 
 
 peersSet = set()

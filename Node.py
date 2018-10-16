@@ -8,12 +8,11 @@ from socket import *
 from threading import RLock
 import _thread
 
-SERVER = 'localhost'  # colocar o ip do peer central
-SERVER_PORT = 12000
-BUFFER = 1024
-
 
 class Node:
+    SERVER = 'localhost'  # colocar o ip do peer central
+    SERVER_PORT = 12000
+    BUFFER = 1024
 
     def __init__(self, address, own_port):
         self.address = address  # wallet address
@@ -28,7 +27,7 @@ class Node:
 
     def start_node(self):
         initial_socket = socket(AF_INET, SOCK_STREAM)
-        initial_socket.connect((SERVER, SERVER_PORT))
+        initial_socket.connect((Node.SERVER, Node.SERVER_PORT))
         initial_socket.send(write_message('connect', self.own_port))
         initial_socket.shutdown(SHUT_WR)
 
@@ -63,7 +62,7 @@ class Node:
 
             response = ''
             while True:
-                data = s.recv(BUFFER).decode('ascii')
+                data = s.recv(Node.BUFFER).decode('ascii')
                 if not data:
                     break
                 response += data
@@ -97,7 +96,7 @@ class Node:
 
         response = ''
         while True:
-            data = s.recv(BUFFER).decode('ascii')
+            data = s.recv(Node.BUFFER).decode('ascii')
             if not data:
                 break
             response += data
@@ -130,7 +129,7 @@ class Node:
 
             response = ''
             while True:
-                data = s.recv(BUFFER).decode('ascii')
+                data = s.recv(Node.BUFFER).decode('ascii')
                 if not data:
                     break
                 response += data
@@ -156,7 +155,7 @@ class Node:
     def route_request(self, conn, addr):
         msg = ''
         while 1:
-            data = conn.recv(BUFFER).decode('ascii')
+            data = conn.recv(Node.BUFFER).decode('ascii')
             if not data:
                 break
             msg += data
