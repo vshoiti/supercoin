@@ -75,8 +75,9 @@ class Node:
                 print('?')
 
         except ConnectionRefusedError:
-            # self.peers.remove((peer_ip, peer_port))
-            print(self.address,'-',peer_ip, ':', peer_port, ' is unreachable')
+            print(self.address, '-', peer_ip, ':', peer_port, 'is unreachable')
+        except TimeoutError:
+            print(self.address, '-', peer_ip, ':', peer_port, 'timed out')
 
     def receive_block(self, new_block, sender_ip, sender_port):
         last_block = self.blockchain.get_last()
@@ -140,7 +141,9 @@ class Node:
                 print(peer_ip, ':', peer_port, '- ', code)
 
         except ConnectionRefusedError:
-            print(self.address,'-',peer_ip, ':', peer_port, 'is unreachable')
+            print(self.address, '-', peer_ip, ':', peer_port, 'is unreachable')
+        except TimeoutError:
+            print(self.address, '-', peer_ip, ':', peer_port, 'timed out')
 
     def receive_transaction(self, peer_socket, transaction):
         if not self.miner:
@@ -163,14 +166,14 @@ class Node:
         if code == 'get_block':
             block_hash = data
             data = self.blockchain.get_block(block_hash)
-            conn.send(write_message('block', data))
+            conn.send(write_message('block', data.__str__()))
         elif code == 'get_top':
             data = self.blockchain.get_last()
-            print('get_top:',data.__str__())
-            conn.send(write_message('top_block', data))
+            print('get_top:', data.__str__())
+            conn.send(write_message('top_block', data.__str__()))
         elif code == 'new_block':
             block = rebuild_block(data)
-            print('new_block:',block.__str__())    
+            print('new_block:', block.__str__())
             self.receive_block(block, sender_ip=addr[0], sender_port=addr[1])
         elif code == 'transaction':
             self.receive_transaction(conn, data)
@@ -325,6 +328,8 @@ def verify_size(block):
 
 
 def rebuild_block(data):
+    if data is str:  # data é uma string. não deveria, mas acontece?
+        data = eval(data)
     block = Block(data['index'], data['prev_hash'])
     block.nonce = data['nonce']
     block.transactions = data['transactions']

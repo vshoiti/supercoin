@@ -50,6 +50,7 @@ class Miner(threading.Thread):
                     return self.propagate_block()
 
                 self.block.nonce += 1
+        return
 
     def propagate_block(self):
         self.node.add_new_blocks([self.block], self.index)
@@ -65,12 +66,16 @@ class Miner(threading.Thread):
                 try:
                     s = socket(AF_INET, SOCK_STREAM)
                     s.connect((peer_ip, peer_port))
-                    s.send(write_message('new_block', self.block))
+                    s.send(write_message('new_block', self.block.__str__()))
                     s.shutdown(SHUT_WR)
                     break
                 except ConnectionRefusedError:
-                    print('miner',self.node.address,'-',peer_ip, ':', peer_port, ' is unreachable')
+                    print('miner',self.node.address,'-',peer_ip, ':', peer_port, 'is unreachable')
                     break
+                except TimeoutError:
+                    print('miner', self.node.address, '-', peer_ip, ':', peer_port, 'timed out')
+                    break
+        return
 
     def verify_difficulty(self, block_hash):
         first_chars = block_hash[:self.difficulty]
