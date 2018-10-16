@@ -42,14 +42,16 @@ class Node:
             print(response)
             code, data = read_message(response)
             if code == 'ok':
-                self.peers = eval(str(data))
-                writePeers("cpeers.txt", self.peers)
+                if data != 'set()':
+                    self.peers = data
+                    writePeers("cpeers.txt", self.peers)
+                else:
+                    self.peers = set()
         finally:
             initial_socket.close()
 
         for peer in self.peers:
-            peer = eval(str(peer))
-            self.request_top_block(peer_ip=peer[0], peer_port=peer[1])
+            self.request_top_block(peer_ip=peer[0], peer_port=int(peer[1]))
         self.listen_requests()
 
     def request_top_block(self, peer_ip, peer_port):
@@ -68,11 +70,14 @@ class Node:
             code, data = read_message(response)
             if code == 'top_block':
                 block = rebuild_block(data)
+                print('new_block: ', block)
                 self.receive_block(block, peer_ip, peer_port)
+            else:
+                print('?')
 
         except ConnectionRefusedError:
             # self.peers.remove((peer_ip, peer_port))
-            print(peer_ip, ':', peer_port, ' is unreachable')
+            print(self.address,'-',peer_ip, ':', peer_port, ' is unreachable')
 
     def receive_block(self, new_block, sender_ip, sender_port):
         last_block = self.blockchain.get_last()
@@ -113,8 +118,7 @@ class Node:
 
     def send_transactions(self, receiving_address, ammount):
         for peer in self.peers:
-            peer = eval(str(peer))
-            _thread.start_new_thread(self.send_transaction, (peer[0], peer[1], receiving_address, ammount))
+            _thread.start_new_thread(self.send_transaction, (peer[0], int(peer[1]), receiving_address, ammount))
 
     def send_transaction(self, peer_ip, peer_port, receiving_address, amount):
         data = {self.address: -amount, receiving_address: amount}
@@ -130,11 +134,14 @@ class Node:
                 if not data:
                     break
                 response += data
-            code, data = read_message(response)
-            print(peer_ip, ':', peer_port, ' - ', code)
+            if not response:
+                print(peer_ip, ':', peer_port, '- no response')
+            else:
+                code, data = read_message(response)
+                print(peer_ip, ':', peer_port, '- ', code)
 
         except ConnectionRefusedError:
-            print(peer_ip, ':', peer_port, ' is unreachable')
+            print(self.address,'-',peer_ip, ':', peer_port, 'is unreachable')
 
     def receive_transaction(self, peer_socket, transaction):
         if not self.miner:
@@ -143,7 +150,8 @@ class Node:
             peer_socket.send(write_message('full_block', None))
         elif self.accept_transaction(transaction):
             peer_socket.send(write_message('tr_accepted', None))
-        peer_socket.close()
+        else:
+            peer_socket.send(write_message('tr_rejected', None))
 
     def route_request(self, conn, addr):
         msg = ''
@@ -159,13 +167,17 @@ class Node:
             conn.send(write_message('block', data))
         elif code == 'get_top':
             data = self.blockchain.get_last()
+            print('get_top:',data.__str__())
             conn.send(write_message('top_block', data))
         elif code == 'new_block':
             block = rebuild_block(data)
+            print('new_block:',block.__str__())    
             self.receive_block(block, sender_ip=addr[0], sender_port=addr[1])
         elif code == 'transaction':
             self.receive_transaction(conn, data)
-        conn.close()
+        elif code == 'peer':
+            print('new peer:', data)
+            self.peers.add(eval(data))
 
     def accept_transaction(self, transaction):
         candidate_state = self.get_current_state().copy()
@@ -191,7 +203,7 @@ class Node:
         return True
 
     def start_miner(self):
-        prev_hash = hash_string(str(self.blockchain.get_last()))
+        prev_hash = hash_string((self.blockchain.get_last()).__str__())
         self.miner = Miner(self, prev_hash, self.blockchain.get_size(), self.transaction_pool)
         self.miner.start()
 
@@ -243,21 +255,23 @@ class Node:
                         break  # adiciona
                 else:  # o bloco é válido
                     top_index = block.index
-
             self.add_new_blocks(different_blocks, top_index)  # adiciona os novos blocos até o maior índice válido
         finally:
             self.lock.release()
 
     def validate_block(self, block):
-        block_hash = hash_string(str(block))
+        block_hash = hash_string(block.__str__())
         if not verify_size(block):
+            print(block_hash, "rejected size")
             return False
         if not self.verify_difficulty(block_hash):
+            print(block_hash, "rejected diff")
             return False
         if not self.verify_transactions(block):
+            print(block_hash, "rejected transactions")
             return False
 
-        print(block_hash, " accepted as valid")
+        print(self.address, ":", block_hash, "accepted as valid")
         return True
 
     def add_new_blocks(self, blocks, top_index):

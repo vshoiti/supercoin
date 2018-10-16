@@ -11,11 +11,23 @@ class Block:
         self_string += "'nonce': " + str(self.nonce) + ", "
         self_string += "'index': " + str(self.index) + ", "
         self_string += "'prev_hash': '" + str(self.prev_hash) + "', "
-        self_string += "'transactions': " + str(self.transactions) + "}"
+        self_string += "'transactions': ["
+        for transaction in self.transactions:
+            self_string += transaction_str(transaction) + ','
+        self_string = self_string[:-1] + "]}"
         return self_string
+        
+def transaction_str(transaction):
+    string = '{'
+    for key, value in sorted(transaction.items(), key=lambda x: x[1]): 
+        string += ("'{}' : {}".format(key, value)) + ','
+    string = string[:-1] + '}'
+    return string
 
-# a = Block(1, '0000')
-# print(a)
+#a = Block(1, '0000')
+#a.transactions.append({'a':33, 'b':-33})
+#print(a)
+
 #
 # b = eval(str(a))
 # print(b)

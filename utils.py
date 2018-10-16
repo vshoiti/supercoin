@@ -17,7 +17,9 @@ def build_data(data):
 
 
 def rebuild_data(data):
-    return eval(data)
+    if data.startswith('{') or data.startswith('['):
+        return eval(data)
+    return data
 
 
 def readPeers(arq, peerSet):

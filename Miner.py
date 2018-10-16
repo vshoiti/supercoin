@@ -44,7 +44,7 @@ class Miner(threading.Thread):
     def mine(self):
         while not self.stopped():
             if len(self.block.transactions) > 1:
-                block_hash = hash_string(str(self.block))
+                block_hash = hash_string(self.block.__str__())
 
                 if self.verify_difficulty(block_hash):
                     return self.propagate_block()
@@ -55,15 +55,22 @@ class Miner(threading.Thread):
         self.node.add_new_blocks([self.block], self.index)
 
         for peer in self.node.peers:
-            peer = eval(str(peer))
-            _thread.start_new_thread(self.send_block, (peer[0], peer[1]))
+            _thread.start_new_thread(self.send_block, (peer[0], int(peer[1])))
 
         return
 
     def send_block(self, peer_ip, peer_port):
-        s = socket(AF_INET, SOCK_STREAM)
-        s.connect((peer_ip, peer_port))
-        s.send(write_message('new_block', self.block))
+        for i in range(0,3):
+            while True:
+                try:
+                    s = socket(AF_INET, SOCK_STREAM)
+                    s.connect((peer_ip, peer_port))
+                    s.send(write_message('new_block', self.block))
+                    s.shutdown(SHUT_WR)
+                    break
+                except ConnectionRefusedError:
+                    print('miner',self.node.address,'-',peer_ip, ':', peer_port, ' is unreachable')
+                    break
 
     def verify_difficulty(self, block_hash):
         first_chars = block_hash[:self.difficulty]
