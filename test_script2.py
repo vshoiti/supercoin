@@ -3,6 +3,7 @@ import threading
 import time
 
 
+# ordem: coinServer, test_script2
 # resultado esperado: 9 transações aceitas, resto rejeitada, bloco minerado e propagado
 
 

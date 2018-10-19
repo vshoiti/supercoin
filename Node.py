@@ -122,6 +122,7 @@ class Node:
 
     def send_transaction(self, peer_ip, peer_port, receiving_address, amount):
         data = {self.address: -amount, receiving_address: amount}
+        self.receive_own_transaction(data)
         try:
             s = socket(AF_INET, SOCK_STREAM)
             s.connect((peer_ip, peer_port))
@@ -135,15 +136,14 @@ class Node:
                     break
                 response += data
             if not response:
-                print(peer_ip, ':', peer_port, '- no response')
+                print(self.address,'-', peer_ip, ':', peer_port, '- no response')
             else:
                 code, data = read_message(response)
-                print(peer_ip, ':', peer_port, '- ', code)
+                print(self.address,'-', peer_ip, ':', peer_port, '- ', code)
 
         except ConnectionRefusedError:
             print(self.address, '-', peer_ip, ':', peer_port, 'is unreachable')
         except TimeoutError:
-            print(self.address, '-', peer_ip, ':', peer_port, 'timed out')
 
     def receive_transaction(self, peer_socket, transaction):
         if not self.miner:
@@ -154,6 +154,13 @@ class Node:
             peer_socket.send(write_message('tr_accepted', None))
         else:
             peer_socket.send(write_message('tr_rejected', None))
+            
+    def receive_own_transaction(self, transaction):
+        if not self.miner:
+            return
+        elif len(self.transaction_pool) >= 9:
+            return
+        self.accept_transaction(transaction)
 
     def route_request(self, conn, addr):
         msg = ''

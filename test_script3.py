@@ -3,12 +3,10 @@ import threading
 import time
 
 # ordem: coinServer, test_script2, test_script3
-# resultado esperado: recebe o bloco, transação rejeitada, pois o endereço 3 não tem fundos
+# resultado esperado: recebe o bloco novo, transação rejeitada, pois o endereço 3 não tem fundos
 # ou
 # ordem: coinServer, test_script4, test_script3
-# resultado esperado: recebe o bloco, transação aceita, pois o endereço 3 tem fundos
-
-
+# resultado esperado: recebe o bloco novo, transação aceita, pois o endereço 3 tem fundos
 
 a = Node('3', 10028)
 t_a = threading.Thread(target=a.start_node, kwargs={})
